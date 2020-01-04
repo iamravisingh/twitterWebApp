@@ -1,13 +1,14 @@
 <template>
   <div id="app">
+  <progress v-if = "loading" class="progress is-small is-danger" max="100"></progress>
   <router-view/>
-  <div class="container is-fullhd">
-      <figure class="image is-128x128">
-      <img class="is-rounded" v-bind:src="userData.profile_image_url_https ? userData.profile_image_url_https : ''">
-      <span>{{userData ? userData.name : ''}}</span>
+  <div class="container is-fullhd" id = "profile">
+      <figure class="image is-64x64">
+      <img class="is-rounded" v-bind:src="userData.profile_image_url_https ? userData.profile_image_url_https : null ">
+      <strong>{{userData.name}}</strong><small>@{{userData.screen_name}}</small><small>{{new Date(userData.created_at).getHours()}}m ago</small>
     </figure>
   </div>
-  <br>
+  <br><br>
   <div class="columns is-gapless is-multiline is-mobile">
     <br>
     <div class = "container is-fluid">
@@ -20,6 +21,7 @@
 <script>
 import codebird from 'codebird';
 import tweet from './component/tweet'
+import { mapGetters } from 'vuex'
 
 export default {
   name: 'app',
@@ -36,14 +38,15 @@ export default {
     .catch(err => {
       console.log('error in getTwitterDetails>>>>>>>>>>>..',err);
     })
-
-
   },
   data () {
     return {
       msg: 'Welcome to Your Vue.js App',
       userData : null
     }
+  },
+  computed: {
+    ...mapGetters(['loading']),
   },
   components : {
     tweet
@@ -59,8 +62,15 @@ export default {
     height : 100vh;
   }
 
-  .is-fullhd {
-    width : 8%;
+  #profile{
+    background: #794BC4
+    /* width :8% */
+  }
+
+  .is-small{
+    height: 4px;
+    margin-bottom: 5px;
+
   }
 
 </style>

@@ -1,42 +1,39 @@
 <template>
   <div>
-    <!-- <ul> -->
-        <template  v-for="(item, index) in tweetStatus">
-        <!-- <li :key = "index">{{item.text}}</li> -->
-        <article class="media" :key = "index">
-            <figure class="media-left">
-                <p class="image is-64x64">
-                <img v-bind:src="item.user.profile_image_url_https">
-                </p>
-            </figure>
-            <div class="media-content">
-                <div class="content">
-                <p>
-                    <strong>{{item.user.name}}</strong> <router-link :to = "{name : 'item.user.url'}" target = "_blank"><small>@{{item.user.screen_name}}</small></router-link> <small>{{new Date(item.created_at).getHours()}}m ago</small>
-                    <br>
-                    {{item.text}}
-                </p>
-                </div>
-                <nav class="level is-mobile">
-                <div class="level-left">
-                    <a class="level-item">
-                    <span class="icon is-small"><i class="fas fa-reply"></i></span>
-                    </a>
-                    <a class="level-item">
-                    <span class="icon is-small"><i class="fas fa-retweet"></i></span>
-                    </a>
-                    <a class="level-item">
-                    <span class="icon is-small"><i class="fas fa-heart"></i></span>
-                    </a>
-                </div>
-                </nav>
+    <template  v-for="(item, index) in tweetStatus">
+    <article class="media" :key = "index">
+        <figure class="media-left">
+            <p class="image is-64x64">
+            <img v-bind:src="item.user.profile_image_url_https">
+            </p>
+        </figure>
+        <div class="media-content">
+            <div class="content">
+            <p>
+                <strong>{{item.user.name}}</strong><router-link :to = "{name : item.user.url}"><small>@{{item.user.screen_name}}</small></router-link> <small>{{new Date(item.created_at).getHours()}}m ago</small>
+                <br>
+                {{item.text}}
+            </p>
             </div>
-            <div class="media-right">
-                <button class="delete"></button>
+            <nav class="level is-mobile">
+            <div class="level-left">
+                <a class="level-item">
+                <span class="icon is-small"><i class="fas fa-reply"></i></span>
+                </a>
+                <a class="level-item">
+                <span class="icon is-small"><i class="fas fa-retweet"><span class="tag is-success">{{item.retweet_count}}</span></i></span>
+                </a>
+                <a class="level-item">
+                <span class="icon is-small"><i class="fas fa-heart"></i></span>
+                </a>
             </div>
-        </article>
-        </template>
-    <!-- </ul> -->
+            </nav>
+        </div>
+        <div class="media-right">
+            <button class="delete" @click = removeTweetStatus(index)></button>
+        </div>
+    </article>
+    </template>
   </div>
 </template>
 
@@ -54,7 +51,7 @@ export default {
         this.statUsesHomeTimeline();
     },
     computed: {
-    ...mapGetters(['userStatus']),
+    ...mapGetters(['userStatus','loading']),
     },
     watch : {
         userStatus(value,newValue){
@@ -75,14 +72,13 @@ export default {
                 return err;
             })
         },
-        removeTweetStatus(){
-            
+        removeTweetStatus(index){
+            return this.tweetStatus.splice(index,1);
         }
     }
 }
 </script>
 
-<style lang="sass" src="bulma"></style>
 <style>
 
 </style>
