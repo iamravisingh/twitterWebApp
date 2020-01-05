@@ -203,7 +203,7 @@ export default {
         },
         onClickPostTweetMsg(){
             console.log('tweet dispatch action invoked onClickTweetMsg>>>>>>>>>>>>>>>>>>>>>>>');
-            // this.$store.dispatch('actionTwitter',this.tweetMsg);
+            this.$store.dispatch('actionTwitter',this.tweetMsg);
         },
         handleComment(index){
             this.isReply = true;

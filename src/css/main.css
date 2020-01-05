@@ -1,0 +1,30 @@
+#app{
+    /* background-color: #2f2f2f; */
+    font-family: monospace;
+    height : 100vh;
+  }
+
+  #profile{
+    background: #794BC4;
+    display: inline-flex;
+    width: 100%;
+  }
+
+  #profile > .content{
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .is-64x64{
+    margin: 0 auto;
+    margin-bottom: 0 !important;
+  }
+
+  .is-small{
+    height: 4px;
+    margin-bottom: 5px;
+  }
+
+  .is-info{
+    background: #794BC4;
+  }
