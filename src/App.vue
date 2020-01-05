@@ -6,9 +6,9 @@
   <div class="container is-fullhd" id = "profile">
     <div class = "container content" >
       <figure class="image is-64x64">
-      <img class="is-rounded" v-bind:src="userData.profile_image_url_https ? userData.profile_image_url_https : null ">
+      <img class="is-rounded" v-bind:src="storedUser ? storedUser.profile_image_url_https : userData.profile_image_url_https">
     </figure>
-      <strong>{{userData.name}}</strong><br><small>@{{userData.screen_name}}</small>
+      <strong>{{storedUser ? storedUser.name : userData.name}}</strong><br><small>@{{storedUser ? storedUser.screen_name : userData.screen_name}}</small>
     </div>
     <div class = "loginButton is-hidden-mobile">
       <!-- <button class="button is-info" v-if = isloggedIn @click = "isloggedIn = true">login</button> -->
@@ -36,7 +36,7 @@ export default {
   name: 'app',
   created(){
     const cb = new codebird;
-    console.log('yay! we got cb in vue>>>>>>>>>>>>>>>',cb);
+    console.log('yay! we got cb in vue>>>>>>>>>>>>>>>',cb,this.storedUser);
     // cb.setConsumerKey("7xuUATGIXa3g343NQfL0xwfKO","RoWrw4NAgj1eTzM1wR4Ee9gwmG0kQKC7HgBAi6U9pxa5SSreGZ");
     // cb.setToken("880716583450161152-tV3u67QIBSfxrRCESRuvwxU9GnVYsKq","PMpKpqBG6tsyfCnZnbWNKbq6ckWoxgPl2fdrLKpQkCCeW")
       this.getTwitterUserDetails();
@@ -61,6 +61,7 @@ export default {
     return {
       userData : null,
       isloggedIn : localStorage.getItem('userLogin') ? false : true,
+      storedUser : localStorage.getItem('userLogin') ? JSON.parse(localStorage.getItem('userLogin')) : ''
     }
   },
   computed: {
@@ -72,11 +73,17 @@ export default {
       .then(result =>  {
         this.userData = result;
         console.log('userData in api response>?>>>>>>>>>>>>>>>',this.userData,this.userData.profile_image_url);
+
       })
       .catch(err => {
         console.log('error in getTwitterDetails>>>>>>>>>>>..',err);
       })
-    }
+    },
+    allocatedDataArr(data){
+      const tweetData = data;
+      const newArr = tweetData.slice(0,data.length > 5 ? data.length + 5 : 5);
+      console.log('allocatedDataArr>>>>>>>>>>>>>>>>',tweetData,newArr);
+    },
   },
   components : {
     twitter,
@@ -121,5 +128,4 @@ export default {
   .is-info{
     background: #794BC4;
   }
-
 </style>

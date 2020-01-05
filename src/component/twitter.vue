@@ -179,6 +179,17 @@ export default {
     methods : {
         statUsesHomeTimeline(){
             this.$store.dispatch('statuses_homeTimeline')
+            .then(res => {
+                if(window.innerWidth < 786){
+                    console.log('mobile mai agaeee >>>>>>>>>>>>>>>');
+                    this.allocatedDataArr(res);
+                }
+            }).catch(err => console.log(err));
+        },
+        allocatedDataArr(data){
+            const tweetData = data;
+            const newArr = tweetData.slice(0,data.length > 5 ? data.length + 5 : 5);
+            console.log('allocatedDataArr>>>>>>>>>>>>>>>>',newArr);
         },
         removeTweetStatus(index){
             return this.tweetStatus.splice(index ,1);
