@@ -1,18 +1,25 @@
 <template>
   <div id="app">
   <progress v-if = "loading" class="progress is-small is-danger" max="100"></progress>
+  <twitterLogin></twitterLogin>
   <router-view/>
   <div class="container is-fullhd" id = "profile">
+    <div class = "container content" >
       <figure class="image is-64x64">
       <img class="is-rounded" v-bind:src="userData.profile_image_url_https ? userData.profile_image_url_https : null ">
-      <strong>{{userData.name}}</strong><small>@{{userData.screen_name}}</small><small>{{new Date(userData.created_at).getHours()}}m ago</small>
     </figure>
+      <strong>{{userData.name}}</strong><br><small>@{{userData.screen_name}}</small>
+    </div>
+    <div class = "loginButton is-hidden-mobile">
+      <button class="button is-info" v-if = isloggedIn >login</button>
+      <button class="button is-info" @click = logout>logout</button>
+    </div>
   </div>
-  <br><br>
+  <hr/>
   <div class="columns is-gapless is-multiline is-mobile">
     <br>
     <div class = "container is-fluid">
-      <tweet></tweet>
+      <twitter></twitter>
     </div>
     </div>
   </div>
@@ -20,7 +27,9 @@
 
 <script>
 import codebird from 'codebird';
-import tweet from './component/tweet'
+import twitter from './component/twitter'
+import twitterLogin from '../src/component/twitterLogin'
+import router from './router/router'
 import { mapGetters } from 'vuex'
 
 export default {
@@ -30,26 +39,52 @@ export default {
     console.log('yay! we got cb in vue>>>>>>>>>>>>>>>',cb);
     // cb.setConsumerKey("7xuUATGIXa3g343NQfL0xwfKO","RoWrw4NAgj1eTzM1wR4Ee9gwmG0kQKC7HgBAi6U9pxa5SSreGZ");
     // cb.setToken("880716583450161152-tV3u67QIBSfxrRCESRuvwxU9GnVYsKq","PMpKpqBG6tsyfCnZnbWNKbq6ckWoxgPl2fdrLKpQkCCeW")
-    this.$store.dispatch('getTwitterUserDetails')
-    .then(result =>  {
-      this.userData = result;
-      console.log('userData in api response>?>>>>>>>>>>>>>>>',this.userData,this.userData.profile_image_url);
-    })
-    .catch(err => {
-      console.log('error in getTwitterDetails>>>>>>>>>>>..',err);
-    })
+      this.getTwitterUserDetails();
+      this.$store.dispatch('direct_messages')
+      this.$store.dispatch('direct_messagesShow')
+      this.$store.dispatch('direct_messagesNew')
+      // this.$store.dispatch('oauth_accessToken');
+      // this.$store.dispatch('oauth_requestToken');
+      // this.$store.dispatch('oauth_authorize');
+      // this.$store.dispatch('handleReTweet')
+      // this.userData = null
+      // this.$store.dispatch('twitterUserScreen',{screen_name : "ledgerChain"})
+      // .then(result => {
+      //   console.log('result in userScreen>>>>>>>>>',result);
+      //   this.userData = result
+      // })
+      // .catch(err => {
+      //   console.log('err >>>>>>>>>>>>>>>',err);
+      // })
   },
   data () {
     return {
-      msg: 'Welcome to Your Vue.js App',
-      userData : null
+      userData : null,
+      isloggedIn : localStorage.getItem('userLogin') ? false : true
     }
   },
   computed: {
-    ...mapGetters(['loading']),
+    ...mapGetters(['loading','isUserNameLoginLoaded']),
+  },
+  methods : {
+    getTwitterUserDetails(){
+      this.$store.dispatch('getTwitterUserDetails')
+      .then(result =>  {
+        this.userData = result;
+        console.log('userData in api response>?>>>>>>>>>>>>>>>',this.userData,this.userData.profile_image_url);
+      })
+      .catch(err => {
+        console.log('error in getTwitterDetails>>>>>>>>>>>..',err);
+      })
+    },
+    logout(){
+      localStorage.setItem('userLogin','');
+      router.go();
+    }
   },
   components : {
-    tweet
+    twitter,
+    twitterLogin
   }
 }
 </script>
@@ -63,14 +98,32 @@ export default {
   }
 
   #profile{
-    background: #794BC4
-    /* width :8% */
+    background: #794BC4;
+    display: inline-flex;
+    width: 100%;
+  }
+
+  #profile > .content{
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .is-64x64{
+    margin: 0 auto;
+    margin-bottom: 0 !important;
+  }
+
+  .loginButton{
+    /* margin : 28px 0 0 0; */
   }
 
   .is-small{
     height: 4px;
     margin-bottom: 5px;
+  }
 
+  .is-info{
+    background: #794BC4;
   }
 
 </style>
