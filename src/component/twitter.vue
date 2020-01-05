@@ -95,7 +95,11 @@
             <div class="media-content">
                 <div class="field">
                 <p class="control">
-                    <textarea class="textarea" placeholder="Add a comment..." v-model="tweetMsg"></textarea>
+                    <textarea class="textarea"
+                     placeholder="Add a comment..." 
+  
+                     >
+                     </textarea>
                 </p>
                 </div>
                 <nav class="level">
@@ -113,7 +117,12 @@
             <div class="media-content">
                 <div class="field">
                 <p class="control">
-                    <textarea class="textarea" placeholder="Post a Tweet..." v-model="tweetMsg"></textarea>
+                    <textarea class="textarea" 
+                    placeholder="Post a Tweet..." 
+                    v-model="tweetMsg"
+                    @blur="$v.tweetMsg.$touch()"
+                    >
+                    </textarea>
                 </p>
                 </div>
                 <nav class="level">
@@ -135,6 +144,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import { required, email, sameAs, minLength } from "vuelidate/lib/validators";
 import moment from 'moment'
 
 export default {
@@ -152,6 +162,12 @@ export default {
     created(){
             console.log('localStorage.getItem>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
             this.statUsesHomeTimeline();
+    },
+    validations : {
+        tweetMsg : {
+            required
+        },
+
     },
     computed: {
     ...mapGetters(['userStatus','loading','userNameLogin']),
@@ -204,6 +220,7 @@ export default {
         onClickPostTweetMsg(){
             console.log('tweet dispatch action invoked onClickTweetMsg>>>>>>>>>>>>>>>>>>>>>>>');
             this.$store.dispatch('actionTwitter',this.tweetMsg);
+            this.tweetMsg = '';
         },
         handleComment(index){
             this.isReply = true;
@@ -211,10 +228,11 @@ export default {
             this.isTweet = false;
             this.reTweetCommentImg = index;
         },
-        goToTweet(){
+        goToTweet(index){
             this.isReply = false;
             this.isReTweet = false;
             this.isTweet = true ;
+            this.$store.dispatch('handleReTweet',tweetStatus[index].id_str);
         }
     }
 }
