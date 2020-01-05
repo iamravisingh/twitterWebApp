@@ -1,7 +1,7 @@
 <template>
   <div>
-    <!-- <template v-for="(item, index) in loginWithUserName"> -->
-        <!-- <article v-if = loginWithUserName class="media">
+    <template v-for="(item, index) in loginWithUserName">
+        <article :key = index v-if = loginWithUserName class="media">
             <figure class="media-left">
                 <p class="image is-64x64">
                 <img v-bind:src="loginWithUserName.profile_image_url_https">
@@ -32,10 +32,11 @@
             <div class="media-right">
                 <button class="delete" @click = removeTweetStatus()></button>
             </div>
-        </article> -->
-    <!-- </template> -->
-    <div class= "columns">
-        <div class = "column is-half">
+        </article>
+    </template>
+    
+    <div class= "columns overallScroll">
+        <div class = "column is-half tweetStatus">
             <template v-for="(item, index) in tweetStatus">
                 <article class="media" :key = "index">
                     <figure class="media-left">
@@ -180,7 +181,7 @@ export default {
             this.$store.dispatch('statuses_homeTimeline')
         },
         removeTweetStatus(index){
-            return this.tweetStatus.splice(index || 1,1);
+            return this.tweetStatus.splice(index ,1);
         },
         handleReTweet(index){
             console.log('event and inde >>>>>>>>>>>>>>>>>x',index,event,);
@@ -212,4 +213,13 @@ export default {
     .submitComment{ 
         margin: 0 10px 0 0;
     }
+    .overallScroll{
+        height: 77vh;
+    }
+
+    .overallScroll > .tweetStatus{
+        overflow-y: scroll;
+    }
+
+    
 </style>

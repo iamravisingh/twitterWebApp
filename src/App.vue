@@ -11,8 +11,8 @@
       <strong>{{userData.name}}</strong><br><small>@{{userData.screen_name}}</small>
     </div>
     <div class = "loginButton is-hidden-mobile">
-      <button class="button is-info" v-if = isloggedIn >login</button>
-      <button class="button is-info" @click = logout>logout</button>
+      <!-- <button class="button is-info" v-if = isloggedIn @click = "isloggedIn = true">login</button> -->
+      <!-- <button class="button is-info" v-if = !isloggedIn @click = logout>logout</button> -->
     </div>
   </div>
   <hr/>
@@ -60,7 +60,7 @@ export default {
   data () {
     return {
       userData : null,
-      isloggedIn : localStorage.getItem('userLogin') ? false : true
+      isloggedIn : localStorage.getItem('userLogin') ? false : true,
     }
   },
   computed: {
@@ -76,10 +76,6 @@ export default {
       .catch(err => {
         console.log('error in getTwitterDetails>>>>>>>>>>>..',err);
       })
-    },
-    logout(){
-      localStorage.setItem('userLogin','');
-      router.go();
     }
   },
   components : {
