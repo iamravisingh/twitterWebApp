@@ -1,0 +1,10 @@
+.submitComment{ 
+    margin: 0 10px 0 0;
+}
+.overallScroll{
+    height: 77vh;
+}
+
+.overallScroll > .tweetStatus{
+    overflow-y: scroll;
+}

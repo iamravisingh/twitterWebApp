@@ -109,41 +109,5 @@ export default {
 </script>
 
 <style lang="css" scoped>
-  .disabled{
-    pointer-events: none;
-    background: #9e9e9e !important;
-    color: #c4c4c4 !important;
-  }
-
- .error_message{
-    color : #a94442;
- }
-
- .input.inValid input {
-  border: 1px solid #a94442;
- }
-
-
-.input.inValid span {
-  color: 1px solid #a94442;
-}
-
-.input.inValid label {
-  color: 1px solid #a94442;
-}
-
-.input.inValid label {
-  color: 1px solid rgb(255, 0, 0);
-}
-
-.button.is-info:hover,button.is-info.is-active{
-    background-color: #456b84 !important;
-}
-
-#loginButton{
-    position: absolute;
-    z-index: 9999;
-    top: 30px;
-    right: 84px;
-}
+  @import '../css/twitterLogin.css'
 </style>

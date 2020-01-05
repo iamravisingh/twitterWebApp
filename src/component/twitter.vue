@@ -210,16 +210,5 @@ export default {
 </script>
 
 <style lang="css" scoped> 
-    .submitComment{ 
-        margin: 0 10px 0 0;
-    }
-    .overallScroll{
-        height: 77vh;
-    }
-
-    .overallScroll > .tweetStatus{
-        overflow-y: scroll;
-    }
-
-    
+    @import '../css/twitter.css';
 </style>
