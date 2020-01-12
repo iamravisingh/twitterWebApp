@@ -1,17 +1,17 @@
 <template>
     <div class = "twitterLogin">
         <div id = "loginButton"  class = "is-hidden-mobile">
-            <button class="button is-info" v-if = isLoggedIn @click = "isModalOpen = true">login</button>
+            <!-- <button class="button is-info" v-if = isLoggedIn @click = "isModalOpen = true">login</button> -->
             <button class="button is-info" v-if = !isLoggedIn @click = logout>logout</button>
         </div>
-        <div class="modal" :class="{'is-active' : isModalOpen}">
-            <div class="modal-background"></div>
-            <div class="modal-content">
-                <div class = "box columns">
+        <!-- <div class="modal" :class="{'is-active' : isModalOpen}"> -->
+            <!-- <div class="modal-background"></div> -->
+            <!-- <div class="modal-content"> -->
+                <div v-if = isLoggedIn class = "box columns">
                     <div class = "login column">
                         <legend>Login</legend>
                         <hr/>
-                        <article class="message is-danger" v-if = errorMsg >
+                        <!-- <article class="message is-danger" v-if = errorMsg >
                             <div class="message-header">
                                 <p>{{errorMsg}}</p>
                                 <button class="delete" @click ="errorMsg = '' " aria-label="delete"></button>
@@ -27,30 +27,11 @@
                         <template v-if="$v.twitterUserName.$error">
                             <span class="error_message" v-if="!$v.twitterUserName.required">User Name is required</span>
                         </template>
-                        <hr/>
-                        <button class="button is-info" :disabled="$v.twitterUserName.$invalid" @click = handleTwitterLogin :class="{'is-loading' : isUserNameLoginLoaded}">Submit</button>
+                        <hr/> -->
+                        <!-- <a href = "http://127.0.0.1:8010/auth/twitter"><button class="button is-info" :disabled="$v.twitterUserName.$invalid" @click = socialLogin :class="{'is-loading' : isUserNameLoginLoaded}">Click for twitter login</button></a> -->
+                        <a href = "http://127.0.0.1:8010/auth/twitter"><button class="button is-info" :class="{'is-loading' : isUserNameLoginLoaded}">Click for twitter login</button></a>
                     </div>
-                    <!-- <div class = "register column">
-                        <legend>Create Account</legend>
-                        <hr/>
-                        <input class="input"
-                        type="text" 
-                        placeholder="Twitter User Name..."
-                        v-modal="registerName"
-                        >
-                        <br>
-                        <input class="input"
-                        type="text" 
-                        placeholder="Twitter User Name..."
-                        v-modal="registerPhoneNum"
-                        >
-                        <hr/>
-                        <button class="button is-info">Register</button>
-                    </div> -->
                 </div>
-            </div> 
-            <button class="modal-close is-large" @click = closeModal aria-label="close"></button>
-        </div>
     </div>
 </template>
 
@@ -64,8 +45,8 @@ export default {
     data(){
         return {
             twitterUserName : '',
-            isModalOpen : localStorage.getItem('userLogin') ? false : true,
-            isLoggedIn : localStorage.getItem('userLogin') ? false : true,
+            isModalOpen : localStorage.getItem('LoggedInUser') ? false : true,
+            isLoggedIn : localStorage.getItem('LoggedInUser') ? false : true,
             isUserLogin : false,
             registerName : '',
             registerPhoneNum : '',
@@ -89,20 +70,20 @@ export default {
             return this.isModalOpen = false;
         },
         handleTwitterLogin(){
-            console.log('inside handleTwitterLogin>>>>>>>>>>>>>>>>>>>>',this.twitterUserName)
-            this.$store.dispatch('twitterUserScreen',{screen_name : this.twitterUserName || "ledgerChain"})
+            this.$store.dispatch('currentLoggedInUser')
             .then(result => {
-                console.log('result in userScreen>>>>>>>>>',result);
-                    this.isModalOpen = false;
+                console.log('result after current user login>>>>>>>>>>>>>>>',result);
             })
             .catch(err => {
-                this.errorMsg = err[0].message
-                console.log('err >>>>>>>>>>>>>>>',err);
+                console.log('result in error block for twitterlogin>>>>>>>>>',err);
             })
         },
+        socialLogin(){
+            return this.$store.dispatch('twitSocialLogin');
+        },
         logout(){
-            localStorage.setItem('userLogin','');
-            router.go();
+            console.log('logoutUser onclick >>>>>>>>>>>>');
+            this.$store.dispatch('logoutUser')
         }
     },
 }

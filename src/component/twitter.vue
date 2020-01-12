@@ -1,90 +1,22 @@
 <template>
   <div>
-    <template v-for="(item, index) in loginWithUserName">
-        <article :key = index v-if = loginWithUserName class="media">
-            <figure class="media-left">
-                <p class="image is-64x64">
-                <img v-bind:src="loginWithUserName.profile_image_url_https">
-                </p>
-            </figure>
-            <div class="media-content">
-                <div class="content">
-                <p>
-                    <strong>{{loginWithUserName.name}}</strong><router-link :to = "{name : loginWithUserName.url}"><small> @{{loginWithUserName.screen_name}}</small></router-link> <small>{{new Date(loginWithUserName.status.created_at).getHours()}}m ago</small>
-                    <br>
-                    {{loginWithUserName.status.text}}
-                </p>
-                </div>
-                <nav class="level is-mobile">
-                <div class="level-left">
-                    <a class="level-item">
-                    <span class="icon is-small"><i class="fas fa-reply"></i></span>
-                    </a>
-                    <a class="level-item" @click = handleReTweet()>
-                    <span class="icon is-small"><i class="fas fa-retweet"><span class="tag is-success">{{loginWithUserName.status.retweet_count}}</span></i></span>
-                    </a>
-                    <a class="level-item">
-                    <span class="icon is-small"><i class="fas fa-heart"></i></span>
-                    </a>
-                </div>
-                </nav>
-            </div>
-            <div class="media-right">
-                <button class="delete" @click = removeTweetStatus()></button>
-            </div>
-        </article>
-    </template>
-    
     <div class= "columns overallScroll">
         <div class = "column is-half tweetStatus">
-            <template v-for="(item, index) in tweetStatus">
-                <article class="media" :key = "index">
-                    <figure class="media-left">
-                        <p class="image is-64x64">
-                        <img v-bind:src="item.user.profile_image_url_https">
-                        </p>
-                    </figure>
-                    <div class="media-content">
-                        <div class="content">
-                        <p>
-                            <strong>{{item.user.name}}</strong><router-link :to = "{name : item.user.url}"><small> @{{item.user.screen_name}}</small></router-link> <small>{{new Date(item.created_at).getHours()}}m ago</small>
-                            <br>
-                            {{item.text}}
-                        </p>
-                        </div>
-                        <nav class="level is-mobile">
-                        <div class="level-left">
-                            <a class="level-item" @click = handleComment(index)>
-                            <span class="icon is-small"><i class="fas fa-reply"></i></span>
-                            </a>
-                            <a class="level-item" @click = handleReTweet(index)>
-                            <span class="icon is-small"><i class="fas fa-retweet"></i></span>
-                            </a>
-                            <span class="tag is-success">{{item.retweet_count}}</span>
-                            <!-- <a class="level-item">
-                            <span class="icon is-small"><i class="fas fa-heart"></i></span>
-                            </a> -->
-                        </div>
-                        </nav>
-                    </div>
-                    <div class="media-right">
-                        <button class="delete" @click = removeTweetStatus(index)></button>
-                    </div>
-                </article>
-            </template>
+            <twitterMessaging :tweetData = tweetStatus @showChatWindow = "handleChat"></twitterMessaging>
         </div>
-        <div class = "column is-half">
         <article v-if = isReTweet class="media">
             <nav class="level">
                 <div class="level-left">
                     <div class="level-item">
                     <a class="submitComment button is-info">ReTweet ?</a> <br>
-                    <button class = "button is-info" @click = goToTweet>Back to tweet</button>
+                    <button class = "button is-info" @click = goToTweet()>Back to tweet</button>
                     </div>
                 </div>
             </nav>
         </article>
-        <legend v-if = isReply>Reply with Comment</legend><hr/>
+        <div class = "column is-half">
+            <chatWindow :item = tweetStatus @showChatWindow = "handleChat" ></chatWindow>
+        <!-- <legend v-if = isReply>Reply with Comment</legend><hr/>
         <article v-if = isReply class="media">
             <figure class="media-left">
                 <p class="image is-64x64">
@@ -106,12 +38,13 @@
                 <div class="level-left">
                     <div class="level-item">
                     <a class="submitComment button is-info">Submit</a> <br>
-                    <button class = "button is-info" @click = goToTweet>Back to tweet</button>
+                    <button class = "button is-info" @click = goToTweet()>Back to tweet</button>
                     </div>
                 </div>
                 </nav>
             </div>
         </article>
+
         <label v-if = isTweet >Post a Tweet</label><hr/>
         <article v-if = isTweet class="media">
             <div class="media-content">
@@ -133,7 +66,7 @@
                 </div>
                 </nav>
             </div>
-        </article>
+        </article> -->
         </div>
     </div>
   <div v-if = "tweetStatus && tweetStatus.length < 1" class = "container">
@@ -144,6 +77,8 @@
 
 <script>
 import { mapGetters } from 'vuex'
+import twitterMessaging from "../component/twitterMessaging";
+import chatWindow from "../component/twitterChatWindow";
 import { required, email, sameAs, minLength } from "vuelidate/lib/validators";
 import moment from 'moment'
 
@@ -161,7 +96,10 @@ export default {
     },
     created(){
             console.log('localStorage.getItem>>>>>>>>>>>>>>>>>>>>>>>>>>>>')
-            this.statUsesHomeTimeline();
+            // this.statUsesHomeTimeline();
+            // this.$store.dispatch('currentLoggedInUser')
+            this.handleTwitterLogin()
+            // this.$store.dispatch('loggedInUserTimline',"jaurasingh")
     },
     validations : {
         tweetMsg : {
@@ -170,15 +108,15 @@ export default {
 
     },
     computed: {
-    ...mapGetters(['userStatus','loading','userNameLogin']),
+    ...mapGetters(['userStatus','loading','currentLoggedInUser','loggedInUserTimline','getHomeTimeline','userNameLogin']),
     },
     watch : {
-        userStatus(value,newValue){
-            console.log('watcher value in userStatus >>>>>>>>>>>>',value,newValue)
+        getHomeTimeline(value,newValue){
+            console.log('getHomeTimeline watcher value in userStatus >>>>>>>>>>>>',value)
             if(value){
                 this.tweetStatus = value;
-                console.log('value inside the userStatus watcher function >>>>>>>>>>>>>>>>>>>>',this.userStatus,this.userNameLogin);
-            }else{
+                console.log('value inside the userStatus watcher function >>>>>>>>>>>>>>>>>>>>',this.tweetStatus);
+            }else{  
                 console.log('else condition of userStatus watcher>>>>>>>>>>>>>>>>')
             }
         },
@@ -197,10 +135,20 @@ export default {
             this.$store.dispatch('statuses_homeTimeline')
             .then(res => {
                 if(window.innerWidth < 786){
-                    console.log('mobile mai agaeee >>>>>>>>>>>>>>>');
+                    console.log('mobile mai agaeee>>>>>>>>>>>>>>>');
                     this.allocatedDataArr(res);
                 }
             }).catch(err => console.log(err));
+        },
+        handleTwitterLogin(){
+            this.$store.dispatch('currentLoggedInUser')
+            .then(result => {
+                console.log('inside the twitter component result after current user login>>>>>>>>>>>>>>>',result);
+                this.$store.dispatch('getHomeTimeline',result.username)
+            })
+            .catch(err => {
+                console.log('inside the twitter component  in error block for twitterlogin>>>>>>>>>',err);
+            })
         },
         allocatedDataArr(data){
             const tweetData = data;
@@ -229,11 +177,20 @@ export default {
             this.reTweetCommentImg = index;
         },
         goToTweet(index){
+            console.log('inside twitte component gototweet>>>>>>>>>>>>>>',index,event)
             this.isReply = false;
             this.isReTweet = false;
             this.isTweet = true ;
             this.$store.dispatch('handleReTweet',tweetStatus[index].id_str);
+        },
+        handleChat(value){
+            console.log('handlechat invoked >>>>>>>>>>>>>>>>',value)
         }
+
+    },
+    components : {
+        twitterMessaging,
+        chatWindow
     }
 }
 </script>

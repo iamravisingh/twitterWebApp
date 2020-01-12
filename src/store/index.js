@@ -27,7 +27,11 @@ export default new Vuex.Store({
         newTweet: "",
         loading: true,
         userNameLogin: "",
-        isUserNameLoginLoaded: false
+        isUserNameLoginLoaded: false,
+        currentLoggedInUser: "",
+        loggedInUserTimline : "",
+        getHomeTimeline: "",
+        getTwitterUserDetails : ''
     },
     mutations: {
         userData: (state, payload) => (state.userData = payload),
@@ -35,8 +39,11 @@ export default new Vuex.Store({
         newTweet: (state, payload) => (state.newTweet = payload),
         loading: (state, payload) => (state.loading = payload),
         userNameLogin: (state, payload) => (state.userNameLogin = payload),
-        isUserNameLoginLoaded: (state, payload) =>
-            (state.isUserNameLoginLoaded = payload)
+        isUserNameLoginLoaded: (state, payload) => (state.isUserNameLoginLoaded = payload),
+        currentLoggedInUser: (state, payload) => (state.currentLoggedInUser = payload),
+        loggedInUserTimline: (state, payload) => (state.loggedInUserTimline = payload),
+        getHomeTimeline: (state, payload) => (state.getHomeTimeline = payload),
+        getTwitterUserDetails: (state, payload) => (state.getTwitterUserDetails = payload)
     },
     getters: {
         userData: state => state.userData,
@@ -44,7 +51,11 @@ export default new Vuex.Store({
         newTweet: state => state.newTweet,
         loading: state => state.loading,
         userNameLogin: state => state.userNameLogin,
-        isUserNameLoginLoaded: state => state.isUserNameLoginLoaded
+        isUserNameLoginLoaded: state => state.isUserNameLoginLoaded,
+        currentLoggedInUser: state => state.currentLoggedInUser,
+        loggedInUserTimline: state => state.loggedInUserTimline,
+        getHomeTimeline: state => state.getHomeTimeline,
+        getTwitterUserDetails: state => state.getTwitterUserDetails,
     },
     actions: {
         /**
@@ -55,19 +66,44 @@ export default new Vuex.Store({
         getTwitterUserDetails(context) {
             context.commit("loading", true);
             return new Promise((resolve, reject) => {
-                cb.__call("account_verifyCredentials", {}, res => {
+                fetch(`${twitterConfig.BASE_URL}/verify_Usercredentials`)
+                .then( res => res.json())
+                .then(res => {
                     const parsedResponse =
-                        res && typeof res === "string" ? JSON.parse(res) : res;
-                    if (parsedResponse.hasOwnProperty("errors")) {
-                        console.log("store if account_verifyCredentials>>>>>>>>>>>>>>>>>>>>",parsedResponse)
-                        context.commit("loading", true);
-                        reject(parsedResponse);
-                    } else {
-                        context.commit("loading", false);
-                        console.log("store else account_verifyCredentials>>>>>>>>>>>>>>>>>>>>", parsedResponse);                        context.commit("userData", parsedResponse);
-                        resolve(parsedResponse);
-                    }
-                });
+                    res && typeof res === "string" ? JSON.parse(res) : res;
+                    context.commit("loading", false);
+                    context.commit("getTwitterUserDetails", res);
+                    console.log("store else account_verifyCredentials>>>>>>>>>>>>>>>>>>>>", parsedResponse);                        context.commit("userData", parsedResponse);
+                    resolve(parsedResponse);
+                })
+                .catch(err => {
+                    console.log("store if account_verifyCredentials>>>>>>>>>>>>>>>>>>>>",parsedResponse)
+                    context.commit("loading", true);
+                    reject(parsedResponse);
+                })
+            });
+        },
+
+        getHomeTimeline(context,payload) {
+            context.commit("loading", true);
+            console.log('payload in gethomeTimeline action ><<<<<<>>>>>>>>>>', payload);
+            return new Promise((resolve, reject) => {
+                // fetch(`${twitterConfig.BASE_URL}/home_timeline/`)
+                fetch('http://127.0.0.1:8010/home_timeline/'+payload)
+                .then(res => res.json())    
+                .then(res => {
+                    const parsedResponse =
+                    res && typeof res === "string" ? JSON.parse(res) : res;
+                    context.commit("loading", false);
+                    context.commit("getHomeTimeline", res);
+                    console.log("store else account_verifyCredentials>>>>>>>>>>>>>>>>>>>>", parsedResponse);                        context.commit("userData", parsedResponse);
+                    resolve(parsedResponse);
+                })
+                .catch(err => {
+                    console.log("store if account_verifyCredentials>>>>>>>>>>>>>>>>>>>>",parsedResponse)
+                    context.commit("loading", true);
+                    reject(parsedResponse);
+                })
             });
         },
 
@@ -79,11 +115,7 @@ export default new Vuex.Store({
         statuses_homeTimeline(context) {
             return new Promise((resolve, reject) => {
                 context.commit("loading", true);
-                cb.__call(
-                    "statuses_homeTimeline", {
-                    count: 25
-                },
-                    (res, rate, err) => {
+                cb.__call("statuses_homeTimeline", { screen_name  : "jaurasingh"},(res, rate, err) => {
                         console.log("rate status Timeline>>>>>>>>>>>>>>", rate);
                         const parsedResponse =
                             res && typeof res === "string" ? JSON.parse(res) : res;
@@ -108,23 +140,23 @@ export default new Vuex.Store({
         actionTwitter(context, payload) {
             context.commit("loading", true);
             console.log("actionTwitter >>>>>>>>>>>>", payload);
+            const tweet_txt = {
+                "status" : payload
+            }
             return new Promise((resolve, reject) => {
-                cb.__call(
-                    "statuses_update", {
-                    status: payload
-                },
-                    (reply, rate, err) => {
-                        if (err) {
-                            context.commit("loading", true);
-                            return reject(err);
-                        } else {
-                            context.commit("loading", false);
-                            console.log("response while tweeting !>>>>>>>>>>>>", res);
-                            context.commit("newTweet", res);
-                            return resolve(res);
-                        }
-                    }
-                );
+                fetch('http://127.0.0.1:8010/statusUpdate', {
+                    method: "post",
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(tweet_txt)
+                }).then(res => res.json())
+                    .then(data => {
+                        context.commit("loading", false);
+                        console.log('response in handleReTweet fetch>>>>>>>>>>', data)
+                    })
+                    .catch(err => {
+                        context.commit("loading", false);
+                        console.log('err in handleReTweet >>>>>>>>>>>', err)
+                    });
             });
         },
 
@@ -149,7 +181,7 @@ export default new Vuex.Store({
                         context.commit("isUserNameLoginLoaded", false);
                         context.commit("userNameLogin", parsedResponse);
                         localStorage.setItem("userLogin", JSON.stringify(res));
-                        router.go();
+                        // router.go();
                         return resolve(parsedResponse);
                     }
                 });
@@ -162,23 +194,98 @@ export default new Vuex.Store({
          * @param {*} payload used as a request parameter while invoking dispatch action.
          * @returns
          */
-        handleReTweet(context) {
+        handleReTweet(context, payload) {
+            context.commit("loading", true);
+            const tweetId = {
+                id : payload
+            }
+            console.log('tweetId >>>>>>>>>>>>>>', tweetId);
             return new Promise((resolve, reject) => {
-                cb.__call(
-                    "statuses_retweets_ID",
-                    "{ id = 1213723282500915201 }",
-                    (res, rate, err) => {
-                        if (err) {
-                            console.log("err oauth rseponse reply>>>>>>>>>>>>>>>>>>", err);
-                            return reject(err);
-                        } else {
-                            console.log("res oauth rseponse reply>>>>>>>>>>>>>>>>>>", res);
-                            return resolve(res);
-                        }
-                    }
-                );
+                fetch(`${twitterConfig.BASE_URL}/reTweet`, {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ id: "1215721230831161345" })
+                })
+                .then(res => res.json())
+                    .then(res => {
+                        context.commit("loading", false);
+                        console.log('response in handleReTweet fetch>>>>>>>>>>', res)
+                    })
+                    .catch(err => {
+                        context.commit("loading", false);
+                        console.log('err in handleReTweet >>>>>>>>>>>', err)
+                    });
             });
         },
+
+
+        twitSocialLogin(context) {
+            return new Promise((resolve, reject) => {
+                fetch(`${twitterConfig.BASE_URL}/auth/twitter`, {
+                    method: "GET",
+                })
+                .then(res => res.json())
+                .then(res => console.log('response in fetch>>>>>>>>>>', res))
+                .catch(err => console.log('err in twitSocialLogin>>>>>>>>>>>', err));
+            })
+        },
+
+        currentLoggedInUser(context) {
+            context.commit("loading", true);
+            return new Promise((resolve, reject) => {
+                fetch(`${twitterConfig.BASE_URL}/LoggedInUser`)
+                .then(res => res.json())
+                .then(res => {
+                    context.commit("loading", false);
+                    console.log('currentLoggedInUser in fetch>>>>>>>>>>', res);
+                    context.commit('currentLoggedInUser', res);
+                    localStorage.setItem('LoggedInUser', JSON.stringify(res));
+                    return resolve(res);
+                })
+                .catch(err => {
+                    console.log('currentLoggedInUser errr  in currentLoggedInUser>>>>>>>>>>>', err);
+                    context.commit("loading", false);
+                    return reject(err);
+                });
+            })
+        },
+
+        logoutUser(context) {
+            new Promise((resolve, reject) => {
+                context.commit('userNameLogin', '');
+                context.commit('currentLoggedInUser', '');
+                localStorage.setItem('LoggedInUser', '');
+                router.push('/');
+                router.go();
+            }) 
+        },
+
+        loggedInUserTimline(context, payload) {
+            context.commit("loading", true);
+            return new Promise((resolve, reject) => {
+                fetch('http://127.0.0.1:8010/user_timeline'+payload, {
+                    method: "GET",
+                })
+                .then(res => res.json())
+                .then(res => {
+                    context.commit("loading", false);
+                    console.log('loggedInUserTimline in fetch>>>>>>>>>>', res);
+                    context.commit('loggedInUserTimline', res);
+                    // context.commit('currentLoggedInUser', res);
+                    // localStorage.setItem('LoggedInUser', JSON.stringify(res));
+                    return resolve(res);
+                })
+                .catch(err => {
+                    console.log('loggedInUserTimline errr  in currentLoggedInUser>>>>>>>>>>>', err);
+                    context.commit("loading", false);
+                    return reject(err);
+                }
+                );
+            })
+        },
+
 
         /**
          * twitter directMessage API
@@ -245,93 +352,6 @@ export default new Vuex.Store({
                         console.log("direct_messages rseponse reply>>>>>>>>>>>>>>>>>>",res);
                         return resolve(res);
                     }
-                });
-            });
-        },
-
-        /**
-         * Store the requested token in localStorage to make user loggedIn even afte page load.
-         * @param {*} oauth_token apiKey.
-         * @param {*} oauth_token_secret apiSecretKey.
-         */
-        saveTokens(oauth_token, oauth_token_secret) {
-            localStorage.setItem("oauth_token", oauth_token);
-            localStorage.setItem("oauth_token_secret", oauth_token_secret);
-        },
-
-        /**
-         * Twitter api for requestToken for specific user login.
-         */
-        oauth_requestToken() {
-            new Promise((resolve, reject) => {
-                cb.__call(
-                    "oauth_requestToken", {
-                    oauth_callback: "http://localhost:8080/"
-                },
-                    (res, rate, err) => {
-                        if (err) {
-                            console.log("err oauth rseponse reply>>>>>>>>>>>>>>>>>>", err);
-                            cb.setToken(reply.oauth_token, reply.oauth_token_secret);
-                            saveTokens(reply.oauth_token, reply.oauth_token_secret);
-
-                            cb.__call("oauth_authorize", {}, auth_url => {
-                                window.codebird_auth = window.open(auth_url);
-                                location.href = auth_url;
-                                authorize(oauth_token, oauth_verifier);
-                            });
-                        } else {
-                            console.log("res oauth rseponse reply>>>>>>>>>>>>>>>>>>", res);
-                        }
-                        // ...
-                    }
-                );
-            });
-        },
-
-        /**
-         * authorize Twitter API after token request to reset the token in codebird for further login procedure.
-         */
-        authorize(oauth_token, oauth_verifier) {
-            cb.setToken(
-                localStorage.getItem("oauth_token"),
-                localStorage.getItem("oauth_token_secret")
-            );
-            cb.__call(
-                "oauth_accessToken", {
-                oauth_verifier
-            },
-                (reply, rate, err) => {
-                    if (err) {
-                        console.log("error response or timeout exceeded" + err.error);
-                        store.loggedIn = false;
-                        // showLoginScreen();
-                    } else if (reply) {
-                        console.log("inside the body autohrize function>>>>>>>>>>>>>>>",reply);
-                        cb.setToken(reply.oauth_token, reply.oauth_token_secret);
-                        saveTokens(reply.oauth_token, reply.oauth_token_secret);
-                        // location.reload();
-                    }
-                }
-            );
-        },
-
-        /**
-         * authorize Twitter API for assigning the role and rechecking with authorization.
-         * @param {*} context can access the any vuex methods.
-         */
-        oauth_authorize(context) {
-            new Promise((resolve, reject) => {
-                cb.__call("oauth/authorize", {}, (reply, rate, err) => {
-                    if (err) {
-                        console.log("error oauth_authorize" + err.error);
-                    }
-                    if (reply) {
-                        // store the authenticated token, which may be different from the request token (!)
-                        console.log("replu in oauth_authorize>>>>>>>>>>>>", reply);
-                        cb.setToken(reply.oauth_token, reply.oauth_token_secret);
-                    }
-                    // if you need to persist the login after page reload,
-                    // consider storing the token in a cookie or HTML5 local storage
                 });
             });
         }
